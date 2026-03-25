@@ -4,17 +4,22 @@
 #include <SDL_image.h>
 #include <glm/glm.hpp>
 
+
+
+
 Game::Game() {
 	isRunning = false;
+	Logger::Log("Game constructor called.");
+
 }
 
 Game::~Game() {
-	// TODO! 
+	Logger::Log("Game destructor called.");
 }
 
 void Game::Initialize() {
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
-	std::cerr << "Error initalizing SDL." << std::endl;
+	Logger::Err("Error initalizing SDL.");
 		return;
 	}
 	SDL_DisplayMode displayMode;
@@ -30,7 +35,7 @@ void Game::Initialize() {
 		windowHeight,
 		SDL_WINDOW_BORDERLESS);
 	if (!window) {
-		std::cerr << "Error creating SDL window." << std::endl;
+		Logger::Err("Error creating SDL window.";
 		return;
 	}
 	
@@ -38,7 +43,7 @@ void Game::Initialize() {
 	// might want to change this later to use vsync and hardware acceleration
 	 renderer = SDL_CreateRenderer(window, -1, 0);
 	if (!renderer) {
-		std::cerr << "Error creating SDL renderer." << std::endl;
+		Logger::Err("Error creating SDL renderer.");
 		return;
 	}
 
@@ -76,13 +81,31 @@ glm::vec2 playerPosition;
 glm::vec2 playerVelocity;
 
 void Game::Setup(){
+
 	playerPosition = glm::vec2(10.0, 20.0);
-	playerVelocity = glm::vec2(0.5, 0.0);
+	playerVelocity = glm::vec2(10.0, 5.0);
 }
 
+
 void Game::Update() {
-	playerPosition.x += playerVelocity.x;
-	playerPosition.y += playerVelocity.y;
+
+	//setup for delta time. this SDL delay segment enforces the FPS limit from game.h
+	//it might be unnessecary but I don't want the game to generate thousands of frames
+	// even with delta time.
+	int timeToWait = MILLISECS_PER_FRAME - (SDL_GetTicks() - millisecsPreviousFrame);
+	if (timeToWait > 0 && timeToWait <= MILLISECS_PER_FRAME) {
+		SDL_Delay(timeToWait);
+	}
+
+	double deltaTime = (SDL_GetTicks() - millisecsPreviousFrame) / 1000.0;
+
+	playerPosition.x += 20 * deltaTime;
+
+	//Previous frame timing
+	int millisecsPreviousFrame = SDL_GetTicks();
+	
+	playerPosition.x += playerVelocity.x *deltaTime;
+	playerPosition.y += playerVelocity.y *deltaTime;
 }
 
 void Game::Render() {
